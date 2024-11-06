@@ -1,5 +1,7 @@
-import { object, string } from 'yup';
+import { object, string, setLocale } from 'yup';
 import onChange from 'on-change';
+import i18next from 'i18next';
+import resources from '../locales/index.js';
 
 export default () => {
   const state = {
@@ -10,14 +12,26 @@ export default () => {
     feeds: [],
   };
 
+  const i18nextInstance = i18next.createInstance();
+  i18nextInstance.init({
+    lng: 'ru',
+    debug: true,
+    resources,
+  });
+  setLocale({
+    string: {
+      url: () => ({ key: 'invalidUrl' }),
+    },
+  });
+
   const validateUrl = (url) => {
     const schema = object({
       url: string()
-      .url('Ссылка должна быть валидным URL')
-      .required('Ничего нет')
-      .notOneOf(state.feeds, 'RSS уже существует'),
+        .url(i18nextInstance.t('errors.invalidURL'))
+        .required()
+        .notOneOf(state.feeds, i18nextInstance.t('errors.invalidURL')),
     });
-    return schema.validate({url})
+    return schema.validate({ url });
   };
 
   const input = document.querySelector('#url-input');
@@ -29,11 +43,7 @@ export default () => {
       feedBackEl.textContent = currentValue;
     }
     if (path === 'form.status') {
-      if (state.form.status === false) {
-        input.classList.add('is-invalid');
-      } else {
-        input.classList.remove('is-invalid');
-      }
+      input.classList.toggle('is-invalid', !currentValue);
     }
   });
   form.addEventListener('submit', (e) => {
@@ -43,12 +53,12 @@ export default () => {
     validateUrl(url)
       .then(() => {
         watchedState.form.status = true;
-        watchedState.form.feedback = 'RSS-канал был успешно загружен';
+        watchedState.form.feedback = i18nextInstance.t('success');
         watchedState.feeds.push(url);
       })
       .catch((error) => {
         watchedState.form.feedback = error.message;
         watchedState.form.status = false;
-      })
+      });
   });
 };
