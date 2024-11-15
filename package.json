@@ -19,7 +19,7 @@
     },
     "testEnvironment": "jsdom"
   },
-  "main": "src/init.js",
+  "main": "src/index.js",
   "devDependencies": {
     "@babel/core": "^7.20.12",
     "@babel/eslint-parser": "^7.19.1",

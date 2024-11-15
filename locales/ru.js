@@ -5,11 +5,8 @@ export default {
       alreadyExist: 'RSS уже существует',
       notContainRSS: 'Ресурс не содержит валидный RSS',
       networkError: 'Ошибка сети',
-      unknown: 'Неизвестная ошибка. Попробуйте еще раз',
-      serverError: 'Ошибка сервера: {{status}}',
-
+      required: 'Не должно быть пустым',
     },
-
     success: 'RSS успешно загружен',
   },
 };
