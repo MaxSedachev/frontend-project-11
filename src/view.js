@@ -19,10 +19,7 @@ export default () => {
     form: {
       status: true,
       statusModal: 'filling',
-      feedback: {
-        errors: '',
-        success: '',
-      },
+      feedback: '',
     },
     addedUrls: [],
 
@@ -53,8 +50,8 @@ export default () => {
     const schema = object({
       url: string()
         .url(i18nextInstance.t('errors.invalidURL'))
-        .required()
-        .notOneOf(state.addedUrls, i18nextInstance.t('errors.invalidURL')),
+        .required(i18nextInstance.t('errors.required'))
+        .notOneOf(state.addedUrls, i18nextInstance.t('errors.alreadyExist')),
     });
     return schema.validate({ url });
   };
@@ -199,9 +196,10 @@ export default () => {
     const url = formData.get('url');
     validateUrl(url)
       .then(async (validUrl) => {
-        watchedState.form.feedback = '';
+        // watchedState.form.feedback = '';
         watchedState.form.status = true;
         watchedState.form.feedback = i18nextInstance.t('success');
+        console.log('watchedState.form.feedback:', watchedState.form.feedback);
         watchedState.addedUrls.push(url);
         watchedState.form.status = 'sending';
         return axios.get(`${routes.allOrigins()}${validUrl.url}`);
@@ -213,6 +211,7 @@ export default () => {
         } else {
           watchedState.addedUrls.push(url);
           watchedState.form.feedback = i18nextInstance.t('success');
+          console.log('watchedState.form.feedback:', watchedState.form.feedback);
         }
         const feedtitle = result.querySelector('title');
         const feedDescription = result.querySelector('description');
@@ -244,15 +243,18 @@ export default () => {
         input.focus();
         watchedState.form.status = 'filling';
         checkForNewPosts();
+        updateFeedback('success', watchedState.form.feedback);
       })
       .catch((error) => {
         watchedState.form.status = false;
         if (axios.isAxiosError(error)) {
           if (error.request) {
             watchedState.form.feedback = i18nextInstance.t('errors.networkError');
+            console.log('watchedState.form.feedback:', watchedState.form.feedback);
           }
         } else {
           watchedState.form.feedback = error.message;
+          updateFeedback('error', watchedState.form.feedback);
         }
         watchedState.form.status = 'filling';
       });
