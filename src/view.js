@@ -2,8 +2,8 @@ import { object, string, setLocale } from 'yup';
 import onChange from 'on-change';
 import i18next from 'i18next';
 import axios from 'axios';
-import resources from '../locales/index.js';
 import * as bootstrap from 'bootstrap';
+import resources from '../locales/index.js';
 
 const parseDOM = (data) => {
   const parser = new DOMParser();
@@ -70,7 +70,6 @@ export default () => {
   };
 
   const watchedState = onChange(state, (path, currentValue) => {
-
     if (path === 'form.status') {
       const submitButton = document.querySelector('[type="submit"]');
       if (currentValue === 'sending') {
@@ -82,7 +81,6 @@ export default () => {
 
     if (path === 'form.feedback.success') {
       updateFeedback('success', currentValue);
-      // feedBackEl.textContent = currentValue;
       if (watchedState.form.status) {
         feedBackEl.classList.remove('text-danger');
         feedBackEl.classList.add('text-success');
@@ -133,13 +131,13 @@ export default () => {
           watchedState.visitedLinks.push(linkId);
         });
       });
-    
+
       const buttons = document.querySelectorAll('.btn-outline-primary');
       buttons.forEach((button) => {
         button.addEventListener('click', () => {
           const postId = button.getAttribute('data-id');
           watchedState.modalId = postId;
-          var myModal = new bootstrap.Modal(document.getElementById('modal'), {});
+          const myModal = new bootstrap.Modal(document.getElementById('modal'), {});
           myModal.show();
           const link = document.querySelector(`a[data-id="${postId}"]`);
           link.classList.replace('fw-bold', 'fw-normal');
@@ -166,35 +164,34 @@ export default () => {
 
   const checkForNewPosts = () => {
     console.log('Проверка нового поста...');
-    const promises = state.addedUrls.map((url) => 
-      axios.get(`${routes.allOrigins()}${url}`, { timeout: 10000 })
-        .then((response) => {
-          const parsedData = parseDOM(response.data.contents);
-          const posts = parsedData.querySelectorAll('item');
-          const newPostsArray = [];
-          posts.forEach((post) => {
-            const postTitle = post.querySelector('title').textContent;
-            const postDescription = post.querySelector('description').textContent;
-            const postLink = post.querySelector('link').textContent;
-            const postId = post.querySelector('guid') ? post.querySelector('guid').textContent : postLink;
+    const promises = state.addedUrls.map((url) => axios.get(`${routes.allOrigins()}${url}`, { timeout: 10000 })
+      .then((response) => {
+        const parsedData = parseDOM(response.data.contents);
+        const posts = parsedData.querySelectorAll('item');
+        const newPostsArray = [];
+        posts.forEach((post) => {
+          const postTitle = post.querySelector('title').textContent;
+          const postDescription = post.querySelector('description').textContent;
+          const postLink = post.querySelector('link').textContent;
+          const postId = post.querySelector('guid') ? post.querySelector('guid').textContent : postLink;
 
-            if (!state.posts.some(post => post.id === postId)) {
-              newPostsArray.push({ id: postId, title: postTitle, description: postDescription, link: postLink });
-            }
-
-          });
-          if(newPostsArray.length) {
-            watchedState.posts.unshift(...newPostsArray);
+          if (!state.posts.some((innerPost) => innerPost.id === postId)) {
+            newPostsArray.push({
+              id: postId, title: postTitle, description: postDescription, link: postLink,
+            });
           }
-        })
-        .catch((err) => {
-          console.error(err);
-        })
-      );
-      Promise.all(promises).finally(() => {
-        setTimeout(checkForNewPosts, 5000);
-      });
-    };
+        });
+        if (newPostsArray.length) {
+          watchedState.posts.unshift(...newPostsArray);
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+      }));
+    Promise.all(promises).finally(() => {
+      setTimeout(checkForNewPosts, 5000);
+    });
+  };
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -228,11 +225,11 @@ export default () => {
         const posts = result.querySelectorAll('item');
         const postsArray = [];
 
-        posts.forEach((post) => {
-          const postTitle = post.querySelector('title').textContent;
-          const postDescription = post.querySelector('description').textContent;
-          const postLink = post.querySelector('link').textContent;
-          const postId = post.querySelector('guid') ? post.querySelector('guid').textContent : postLink;
+        posts.forEach((innerPost) => {
+          const postTitle = innerPost.querySelector('title').textContent;
+          const postDescription = innerPost.querySelector('description').textContent;
+          const postLink = innerPost.querySelector('link').textContent;
+          const postId = innerPost.querySelector('guid') ? innerPost.querySelector('guid').textContent : postLink;
           postsArray.unshift({
             id: postId,
             title: postTitle,
@@ -260,20 +257,20 @@ export default () => {
         watchedState.form.status = 'filling';
       });
   });
+  const modal = document.querySelector('#modal');
   modal.addEventListener('show.bs.modal', (e) => {
-
     if (e.target.getAttribute('data-id')) {
-        const currentPostId = e.target.getAttribute('data-id');
-        watchedState.visitedLinks.push(currentPostId);
-        watchedState.modalId = currentPostId;
+      const currentPostId = e.target.getAttribute('data-id');
+      watchedState.visitedLinks.push(currentPostId);
+      watchedState.modalId = currentPostId;
 
-        const link = document.querySelector(`a[data-id="${currentPostId}"]`);
-        link.classList.replace('fw-bold', 'fw-normal');
-        link.classList.add('link-secondary');
+      const link = document.querySelector(`a[data-id="${currentPostId}"]`);
+      link.classList.replace('fw-bold', 'fw-normal');
+      link.classList.add('link-secondary');
     }
-});
+  });
 
-const links = document.querySelectorAll('.fw-bold');
+  const links = document.querySelectorAll('.fw-bold');
   links.forEach((link) => {
     link.addEventListener('click', () => {
       const linkId = link.getAttribute('data-id');
