@@ -250,7 +250,7 @@ export default () => {
         if (axios.isAxiosError(error)) {
           if (error.request) {
             watchedState.form.feedback = i18nextInstance.t('errors.networkError');
-            console.log('watchedState.form.feedback:', watchedState.form.feedback);
+            updateFeedback('error', watchedState.form.feedback);
           }
         } else {
           watchedState.form.feedback = error.message;
